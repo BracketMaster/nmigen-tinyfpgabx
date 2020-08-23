@@ -1,0 +1,3 @@
+-e git+git://github.com/BracketMaster/luna@test_pip_and_FHDL#egg=luna
+tinyprog
+pyusb
