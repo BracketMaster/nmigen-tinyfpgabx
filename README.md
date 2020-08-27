@@ -35,7 +35,10 @@ LED on the FPGA.
 ## Luna Simple ACM Serial Loopback
 
 **Note:** synchronous logic that communicates with
-the serial link must occur in the ``usb`` domain
+the serial link must occur in the ``usb`` domain.
+
+This is currently done with nMigen's
+``DomainRenamer``
 
 ```
 python3 serial_loopback.py

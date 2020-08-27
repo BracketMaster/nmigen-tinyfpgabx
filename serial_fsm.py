@@ -9,10 +9,12 @@ payloads in memory instead.
 Note that all synchronous logic that interfaces
 with the serial link must be in the ``usb``
 domain.
+
+This can be accomplished with ``DomainRenamer``
 """
 
 from nmigen import Module, Elaboratable, Signal
-from nmigen import Array
+from nmigen import Array, DomainRenamer
 
 from luna.gateware.stream import StreamInterface
 from luna.full_devices import USBSerialDevice
@@ -33,31 +35,31 @@ class InterfaceController(Elaboratable):
         letters = Array([Signal(8) for _ in range(8)])
         counter = Signal(8)
 
-        with m.FSM(domain="usb"):
+        with m.FSM():
 
             with m.State('FIRST'):
                 m.d.comb += self.rx_serial.ready.eq(1)
 
                 with m.If(rx_serial.valid & rx_serial.first):
-                    m.d.usb += letters[counter].eq(rx_serial.payload)
+                    m.d.sync += letters[counter].eq(rx_serial.payload)
                     # if payload is both the first and last in packet
                     with m.If(rx_serial.last):
-                        m.d.usb += counter.eq(0)
+                        m.d.sync += counter.eq(0)
                         m.next = 'SEND'
                     # if the payload is only the first in packet
                     with m.Else():
-                        m.d.usb += counter.eq(counter + 1)
+                        m.d.sync += counter.eq(counter + 1)
                         m.next = 'BODY'
             
             with m.State('BODY'):
                 m.d.comb += self.rx_serial.ready.eq(1)
                 with m.If(rx_serial.valid):
-                    m.d.usb += letters[counter].eq(rx_serial.payload)
+                    m.d.sync += letters[counter].eq(rx_serial.payload)
                     with m.If(rx_serial.last):
-                        m.d.usb += counter.eq(0)
+                        m.d.sync += counter.eq(0)
                         m.next = 'SEND'
                     with m.Else():
-                        m.d.usb += counter.eq(counter + 1)
+                        m.d.sync += counter.eq(counter + 1)
 
             
             with m.State('SEND'):
@@ -70,10 +72,10 @@ class InterfaceController(Elaboratable):
 
                     with m.If(counter == 7):
                         m.d.comb += tx_serial.last.eq(1)
-                        m.d.usb += counter.eq(0)
+                        m.d.sync += counter.eq(0)
                         m.next = 'FIRST'
                     with m.Else():
-                        m.d.usb += counter.eq(counter + 1)
+                        m.d.sync += counter.eq(counter + 1)
         
         return m
 
@@ -120,7 +122,8 @@ class Top(Elaboratable):
         # attach components
         m.submodules.serial_link = serial_link = self.serial_link
         m.submodules.interface_controller = interface_controller \
-            = self.interface_controller
+            = DomainRenamer("usb")(self.interface_controller)
+        
         
         # (serial link) <> (interface controller)
         m.d.comb +=  interface_controller.rx_serial.connect(serial_link.rx)
