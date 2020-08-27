@@ -32,15 +32,29 @@ LED on the FPGA.
 
 ![](doc/fpga.gif)
 
-## Luna ACM Serial UART
+## Luna Simple ACM Serial Loopback
+
+**Note:** synchronous logic that communicates with
+the serial link must occur in the ``usb`` domain
 
 ```
-python3 acm_serial.py
+python3 serial_loopback.py
 python3 driver.py
 ```
 
-The serial link is configured in acm_serial.py
-to add one to the sent character and return it.
+USB packets are sent/recieved directly to/from
+the FPGA in ``serial_simple.py`` using libusb.
 
-So ``driver.py`` send ``a`` and receives back ``b``
-which it prints out to the terminal.
+## Luna FSM Based Serial Loopback
+
+Demonstrates how to drive the signals on
+the Serial link directly with a simple 
+state machine.
+
+Also forms a loopback, but holds packet
+payloads in memory instead.
+
+```
+python3 serial_fsm.py
+python3 driver.py
+```

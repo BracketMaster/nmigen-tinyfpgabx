@@ -35,6 +35,18 @@ inn = usb.util.find_descriptor(
         usb.util.endpoint_direction(e.bEndpointAddress) == \
         usb.util.ENDPOINT_IN)
 
-msg = 'a'
+msg = 'hi there'
 out.write(msg)
-print(inn.read(len(msg)).tostring().decode("utf-8"))
+
+buf = []
+ret = inn.read(10)
+print(" ==== SENT PACKET ==== ")
+print(msg)
+print()
+print(" ==== RETURNED PACKET ==== ")
+print(" ==== BY INT ==== ")
+print(list(ret))
+print(" ==== BY BYTE ==== ")
+print([format(val, '08b') for val in list(ret)])
+print(" ==== AS STRING ==== ")
+print(ret.tostring().decode("utf-8"))
