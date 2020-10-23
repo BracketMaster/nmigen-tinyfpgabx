@@ -27,8 +27,8 @@ class Serial(Elaboratable):
                 USBSerialDevice(bus=ulpi, idVendor=0x16d0, idProduct=0x0f3b)
         
         # connect peripherals
-        m.d.comb += self.rx.connect(usb_serial.rx)
-        m.d.comb += usb_serial.tx.connect(self.tx)
+        m.d.comb += usb_serial.rx.connect(self.rx)
+        m.d.comb += self.tx.connect(usb_serial.tx)
 
         # ... and always connect by default.
         m.d.comb += usb_serial.connect.eq(1)
@@ -39,7 +39,7 @@ class Top(Elaboratable):
     def elaborate(self, platform):
         m = Module()
         m.submodules.Serial = serial = Serial()
-        m.d.comb += serial.tx.connect(serial.rx)
+        m.d.comb += serial.rx.connect(serial.tx)
         return m
 
 if __name__ == "__main__":
